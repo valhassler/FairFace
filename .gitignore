@@ -1,4 +1,5 @@
 fair_face_models/
 detected_faces/
+test_outputs.csv
 test/
 my_test.csv

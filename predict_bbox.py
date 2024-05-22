@@ -80,14 +80,14 @@ def predidct_age_gender_race(save_prediction_at, bboxes, imgs_path = 'cropped_fa
 
     model_fair_7 = torchvision.models.resnet34(pretrained=True)
     model_fair_7.fc = nn.Linear(model_fair_7.fc.in_features, 18)
-    model_fair_7.load_state_dict(torch.load('fair_face_models/fairface_alldata_20191111.pt'))
+    model_fair_7.load_state_dict(torch.load('fair_face_models/res34_fair_align_multi_7_20190809.pt'))
     #model_fair_7.load_state_dict(torch.load('fair_face_models/res34_fair_align_multi_7_20190809.pt'))
     model_fair_7 = model_fair_7.to(device)
     model_fair_7.eval()
 
     model_fair_4 = torchvision.models.resnet34(pretrained=True)
     model_fair_4.fc = nn.Linear(model_fair_4.fc.in_features, 18)
-    model_fair_4.load_state_dict(torch.load('fair_face_models/fairface_alldata_4race_20191111.pt'))
+    model_fair_4.load_state_dict(torch.load('fair_face_models/res34_fair_align_multi_4_20190809.pt'))
     model_fair_4 = model_fair_4.to(device)
     model_fair_4.eval()
 
@@ -114,8 +114,8 @@ def predidct_age_gender_race(save_prediction_at, bboxes, imgs_path = 'cropped_fa
             print("Predicting... {}/{}".format(index, len(img_names)))
 
         face_names.append(img_name)
-        image = dlib.load_rgb_image(img_name)
-        image = trans(image)
+        image_face = dlib.load_rgb_image(img_name)
+        image = trans(image_face)
         image = image.view(1, 3, 224, 224)  # reshape image to match model dimensions (1 batch size)
         image = image.to(device)
 
@@ -219,20 +219,16 @@ def predidct_age_gender_race(save_prediction_at, bboxes, imgs_path = 'cropped_fa
     print("saved results at ", save_prediction_at)
 
 
-def ensure_dir(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--csv', dest='input_csv', action='store',
-                        help='csv file of image path where col name for image path is "img_path')
+    parser.add_argument('--csv', dest='input_csv', action='store', help='csv file of image path where col name for image path is "img_path')
     print("using CUDA?: %s" % dlib.DLIB_USE_CUDA)
     args = parser.parse_args()
     SAVE_DETECTED_AT = "detected_faces"
-    ensure_dir(SAVE_DETECTED_AT)
+    os.makedirs(SAVE_DETECTED_AT, exist_ok=True)
+
+    
     imgs = pd.read_csv(args.input_csv)['img_path']
     bboxes = detect_face(imgs, SAVE_DETECTED_AT)
     print("detected faces are saved at ", SAVE_DETECTED_AT)
